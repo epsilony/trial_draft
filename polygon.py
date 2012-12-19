@@ -50,10 +50,55 @@ class Polygon(object):
         else:
             return 'o'
         
+    def distance_function(self,xy):
+        r_crs=self.ray_crossing(xy)
+        if r_crs == 'e' or r_crs == 'v':
+            return 0
+        inf_abs=self.distance_to_segment(0,xy)
+        for i in xrange(1,self.vertex_xys.shape[0]):
+            t=self.distance_to_segment(i,xy)
+            if t<inf_abs:
+                inf_abs=t
+        return inf_abs if r_crs=='i' else -inf_abs
+        
+    def distance_to_segment(self,i,xy):
+        i2=(i+1) % self.vertex_xys.shape[0]
+        v1=self.vertex_xys[i]
+        v2=self.vertex_xys[i2]
+        v_e=v2-v1
+        len_e=np.dot(v_e,v_e)**0.5
+        v_xy=xy-v1
+        nv_e=v_e/len_e
+        dt=np.dot(nv_e,v_xy)
+        if dt>=len_e:
+            t=xy-v2
+            return np.dot(dt,dt)**0.5
+        elif dt<=0:
+            return np.dot(v_xy,v_xy)**0.5
+        else:
+            return abs(np.cross(nv_e,v_xy))
+            
+        
 def sample_polygon():
-    # An triangle
-    return Polygon([[0, 0], [1, 0], [0, 1]])
+    return Polygon([[0, 0], [1, 0], [1, 1],[0.5,0.5],[0,1]])
 
 if __name__ == '__main__':
     pg = sample_polygon()
+    dist_func=np.frompyfunc(lambda x,y:pg.distance_function((x,y)),2,1)
+    xs=np.linspace(-0.5,1.5,100)
+    ys=np.linspace(-0.5,1.5,100)
+    (g_xs,g_ys)=np.meshgrid(xs, ys)
+    g_zs=dist_func(g_xs,g_ys)
+    
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib import pyplot as plt
+    fig=plt.figure()
+    ax=fig.add_subplot(121,projection='3d')
+    ax.contour(g_xs,g_ys,g_zs)
+    ax.plot_wireframe(g_xs,g_ys,g_zs,rstride=5,cstride=5)
+    ax2=fig.add_subplot(122,projection='3d')
+    ax2.contour(g_xs,g_ys,g_zs,20)
+    ax2.contourf(g_xs,g_ys,g_zs,(0,0.05))
+    fig.show()
+    
     
