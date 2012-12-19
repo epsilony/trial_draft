@@ -33,11 +33,16 @@ class Polygon(object):
             lstrad = (y_i < y) != (y_i1 < y)
             
             if rstrad or lstrad:
-                xcross = (x_i*y-x_i*y_i1-x_i1*y+x_i1*y_i)/(y_i-y_i1)
-                if(rstrad and xcross > x):
+                if rstrad and x_i>x and x_i1>x:
                     rcross += 1
-                if(lstrad and xcross < x):
+                elif lstrad and x_i<x and x_i1<x:
                     lcross += 1
+                else:
+                    xcross = (x_i*y-x_i*y_i1-x_i1*y+x_i1*y_i)/(y_i-y_i1)
+                    if(rstrad and xcross > x):
+                        rcross += 1
+                    if(lstrad and xcross < x):
+                        lcross += 1
         if rcross % 2 != lcross % 2 :
             return 'e'
         if rcross % 2 == 1:
